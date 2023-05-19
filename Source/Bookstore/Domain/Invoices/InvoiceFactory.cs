@@ -20,7 +20,7 @@ public class InvoiceFactory
     public IEnumerable<Invoice> ToModels(IEnumerable<InvoiceRecord> representations) =>
         representations.Select(ToModel);
     
-    public Expression<Func<InvoiceRecord, bool>> DelinquientInvoiceTest =>
+    public Expression<Func<InvoiceRecord, bool>> DelinquentInvoiceTest =>
         invoice => invoice.PaymentTime == null 
                    && invoice.DueDate.AddDays(this.DelinquencyDays) < OnDate;
 }
