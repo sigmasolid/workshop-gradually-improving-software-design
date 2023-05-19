@@ -36,4 +36,10 @@ public class UnitTest1
 
         Assert.Equal(3, result.Last());
     }
+    
+    [Fact]
+    public void Prime10000()
+    {
+        _testOutputHelper.WriteLine(PrimeGenerator.HorvarGeneratePrimes().ElementAt(100000).ToString());
+    }
 }

@@ -45,4 +45,17 @@ public class PrimeGenerator
 
         return primes;
     }
-}
+
+    public static IEnumerable<int> HorvarGeneratePrimes() =>
+        GetPrimeCandidates().Where(IsPrime);
+
+    private static bool IsPrime(int candidate) =>
+        !GetDivisorsOf(candidate).Any();
+
+    private static IEnumerable<int> GetDivisorsOf(int candidate) =>
+        Enumerable.Range(2, (int)Math.Sqrt(candidate) - 1)
+            .Where(divisor => candidate % divisor == 0);
+
+    private static IEnumerable<int> GetPrimeCandidates() =>
+        Enumerable.Range(2, int.MaxValue - 1);
+}   
