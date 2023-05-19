@@ -28,7 +28,24 @@ public class BookDetailsModel : PageModel
         if ((await _dbContext.Books.GetBooks().ById(id)) is Book book)
         {
             this.Book = book;
-            this.PriceSpecification = new List<PriceLine>() { new("Price", BookPricing.SeedPriceFor(book, Currency.USD).Value) };
+            var price = BookPricing.SeedPriceFor(book, Currency.USD).Value;
+            if (_discounts.RelativeDiscount > 0)
+            {
+                var discount = price * _discounts.RelativeDiscount;
+                var discountedPrice = price * (1 - _discounts.RelativeDiscount);
+                this.PriceSpecification = new List<PriceLine>()
+                {
+                    new("Price", price),
+                    new($"Discount {_discounts.RelativeDiscount*100}%", discount),
+                    new("Discounted Price", discountedPrice)
+                };
+            }
+            else
+            {
+                this.PriceSpecification = new List<PriceLine>()
+                    { new("Price", price) };
+            }
+
             return Page();
         }
 
