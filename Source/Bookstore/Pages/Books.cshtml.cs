@@ -12,7 +12,16 @@ public class BooksModel : PageModel
     private readonly ILogger<IndexModel> _logger;
     private readonly BookstoreDbContext _dbContext;
     public IEnumerable<Book> Books { get; private set; } = Enumerable.Empty<Book>();
+    public IEnumerable<char> AuthorInitials { get; set; } = Enumerable.Empty<char>();
     private readonly IDataSeed<Book> _booksSeed;
+    
+    // private async Task PopulatePublishedAuthorInitials() =>
+    //     this.AuthorInitials  = await _dbContext.BookAuthors
+    //         .GetPublishedAuthors()
+    //         .Select(author => author.LastName.Substring(0, 1))
+    //         .Distinct()
+    //         .OrderBy(initial => initial)
+    //         .ToListAsync();
 
     public BooksModel(ILogger<IndexModel> logger, BookstoreDbContext dbContext, IDataSeed<Book> booksSeed)
     {
@@ -27,5 +36,6 @@ public class BooksModel : PageModel
         this.Books = await _dbContext.Books.GetBooks()
             .FilterBookByAuthorInitial(authorInitial)
             .OrderBy(book => book.Title).ToListAsync();
+        this.AuthorInitials = _dbContext.Books.GetAuthorInitials();
     }
 }

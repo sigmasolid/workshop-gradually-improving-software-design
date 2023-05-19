@@ -20,4 +20,8 @@ public static class BookSpecifications
         authorInitial is null
             ? books
             : books.Where(book => book.AuthorsCollection.Any(author => author.Person.LastName.StartsWith(authorInitial)));
+
+    public static IQueryable<char> GetAuthorInitials(this IQueryable<Book> books) =>
+        books.GetBooks().SelectMany(book => book.AuthorsCollection.Select(author => author.Person.LastName[0]))
+            .Distinct();
 }

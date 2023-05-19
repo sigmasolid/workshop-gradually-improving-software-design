@@ -5,22 +5,28 @@
 }
 
 <div class="text-center">
+    @foreach (var authorInitial in Model.AuthorInitials)
+    {
+        <a class="btn btn-primary" href="/books?authorInitial=@authorInitial">
+            @authorInitial
+        </a>
+    }
     <table class="table table-striped">
         <thead>
-            <th scope="col">#</th>
-            <th scope="col" style="text-align: left">Author(s)</th>
-            <th scope="col" style="text-align: left">Title</th>
-            <th></th>
+        <th scope="col">#</th>
+        <th scope="col" style="text-align: left">Author(s)</th>
+        <th scope="col" style="text-align: left">Title</th>
+        <th></th>
         </thead>
         <tbody>
-            @foreach (var (book, ordinal) in Model.Books.Select((book, index) => (book, index + 1)))
-            {
-                <tr>
-                    <td>@ordinal</td>
-                    <td style="text-align: left">@string.Join(", ", book.Authors.Select(person => $"{person.FirstName} {person.LastName}"))</td>
-                    <td style="text-align: left">@book.Title</td>
-                    <td><a class="btn btn-primary" href="/book/@book.Id">View</a></td>
-                </tr>
-            }
+        @foreach (var (book, ordinal) in Model.Books.Select((book, index) => (book, index + 1)))
+        {
+            <tr>
+                <td>@ordinal</td>
+                <td style="text-align: left">@string.Join(", ", book.Authors.Select(person => $"{person.FirstName} {person.LastName}"))</td>
+                <td style="text-align: left">@book.Title</td>
+                <td><a class="btn btn-primary" href="/book/@book.Id">View</a></td>
+            </tr>
+        }
     </table>
 </div>
