@@ -5,12 +5,14 @@ using Bookstore.Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
 
 namespace Bookstore.Pages;
 
 public class InvoicesModel : PageModel
 {
-    public record InvoiceRow(Guid Id, int Ordinal, string Label, string IssueDate, string Status, Money Total, string Style, bool AllowPayment);
+    public record InvoiceRow(Guid Id, int Ordinal, string Label, string IssueDate, string Status, Money Total,
+        string Style, bool AllowPayment);
 
     private readonly ILogger<IndexModel> _logger;
     private readonly BookstoreDbContext _context;
@@ -19,13 +21,18 @@ public class InvoicesModel : PageModel
 
     public IEnumerable<InvoiceRow> Invoices { get; private set; } = Enumerable.Empty<InvoiceRow>();
 
-    public InvoicesModel(ILogger<IndexModel> logger, BookstoreDbContext context, IDataSeed<InvoiceRecord> invoicesSeed, InvoiceFactory invoiceFactory) => 
+    public IReadOnlyList<DueNotification> DelinquentNotifications { get; private set; } =
+        Array.Empty<DueNotification>();
+
+    public InvoicesModel(ILogger<IndexModel> logger, BookstoreDbContext context, IDataSeed<InvoiceRecord> invoicesSeed,
+        InvoiceFactory invoiceFactory) =>
         (_logger, _context, _invoicesSeed, _invoiceFactory) = (logger, context, invoicesSeed, invoiceFactory);
 
     public async Task OnGet()
     {
         await _invoicesSeed.SeedAsync();
         await PopulateInvoices();
+        await PopulateDelinquentCustomers();
     }
 
     public async Task<IActionResult> OnPost(Guid invoiceId)
@@ -40,6 +47,7 @@ public class InvoicesModel : PageModel
         {
             _logger.LogWarning("Invoice {invoiceId} not found", invoiceId);
         }
+
         return RedirectToPage("/invoices");
     }
 
@@ -61,6 +69,20 @@ public class InvoicesModel : PageModel
             invoice.IssueDate.ToString("MM/dd/yyyy"),
             $"{invoice.Status.prefix} {invoice.Status.date}",
             invoice.Total, ToStyle(invoice), invoice is UnpaidInvoice);
+
+    private async Task PopulateDelinquentCustomers()
+    {
+        var records = await _context.Invoices
+            .Include(invoice => invoice.Customer)
+            .Include(invoice => invoice.Lines)
+            .Where(_invoiceFactory.DelinquentInvoiceTest)
+            .ToListAsync();
+        var invoices = records.Select(_invoiceFactory.ToModel);
+        DelinquentNotifications = invoices.GroupBy(i => i.CustomerId)
+            .Select(group => new DueNotification(group.First().Customer,
+                group.Aggregate(Money.Zero, (total, invoice) => total + invoice.Total))
+            ).ToArray();
+    }
 
     private static string ToStyle(Invoice invoice) =>
         invoice.GetType().Name.Replace("Invoice", "").ToLower();
