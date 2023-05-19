@@ -34,4 +34,7 @@ public class RelativeDiscount : IDiscount
             new($"Discount {_relativeDiscount * 100}%", discount)
         };
     }
+    
+    public static IDiscount Create(decimal discount) =>
+        discount <= 0 || discount >= 1 ? new NoDiscount() : new RelativeDiscount(discount);
 }
