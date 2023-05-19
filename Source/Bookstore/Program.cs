@@ -25,6 +25,7 @@ else
 }
 
 decimal relativeDiscount = builder.Configuration.GetValue<decimal>("Discounts:RelativeDiscount", 0);
+builder.Services.AddScoped<Discounts>(_ => new Discounts(relativeDiscount));
 
 var app = builder.Build();
 

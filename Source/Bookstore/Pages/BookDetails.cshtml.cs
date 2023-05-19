@@ -12,12 +12,16 @@ public class BookDetailsModel : PageModel
 
     private readonly ILogger<IndexModel> _logger;
     private readonly BookstoreDbContext _dbContext;
+    private readonly Discounts _discounts;
     public Book Book { get; private set; } = null!;
 
     public IReadOnlyList<PriceLine> PriceSpecification { get; private set; } = Array.Empty<PriceLine>();
 
-    public BookDetailsModel(ILogger<IndexModel> logger, BookstoreDbContext dbContext) =>
+    public BookDetailsModel(ILogger<IndexModel> logger, BookstoreDbContext dbContext, Discounts discounts)
+    {
+        _discounts = discounts;
         (_logger, _dbContext) = (logger, dbContext);
+    }
 
     public async Task<IActionResult> OnGet(Guid id)
     {
